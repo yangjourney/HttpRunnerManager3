@@ -2514,3 +2514,11 @@ KeyError: 'name'
 2020-08-11 21:51:48,335 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/add_task/ HTTP/1.1" 200 19144
 2020-08-11 21:52:18,452 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/report_list/1/ HTTP/1.1" 200 23066
 2020-08-11 21:52:36,771 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/5/ HTTP/1.1" 200 75210
+2020-08-11 21:58:07,692 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/suite_list/1/ HTTP/1.1" 200 27884
+2020-08-11 21:58:07,708 [django.server:154] [basehttp:log_message] [INFO]- "GET /static/assets/js/commons.js HTTP/1.1" 304 0
+2020-08-11 21:58:43,274 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/periodictask/1/ HTTP/1.1" 200 16463
+2020-08-11 21:58:55,712 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/suite_list/1/ HTTP/1.1" 200 27884
+2020-08-11 22:00:21,159 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/add_suite/ HTTP/1.1" 200 17797
+2020-08-11 22:00:23,781 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 12
+2020-08-11 22:00:25,683 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 111
+2020-08-11 22:01:35,697 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/module_list/1/ HTTP/1.1" 200 28272
