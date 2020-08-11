@@ -2474,3 +2474,11 @@ KeyError: 'name'
 2020-08-11 19:52:14,411 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\tasks.py changed, reloading.
 2020-08-11 19:52:15,597 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
 2020-08-11 21:27:29,781 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-11 21:27:46,998 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/test_list/1/ HTTP/1.1" 200 34501
+2020-08-11 21:27:47,330 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 0
+2020-08-11 21:27:49,993 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/test_list/1/ HTTP/1.1" 200 34501
+2020-08-11 21:27:50,173 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 0
+2020-08-11 21:27:51,663 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/add_case/ HTTP/1.1" 200 34198
+2020-08-11 21:27:54,118 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 12
+2020-08-11 21:27:55,359 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 111
+2020-08-11 21:27:55,360 [django.server:154] [basehttp:log_message] [INFO]- "POST /api/add_case/ HTTP/1.1" 200 81
