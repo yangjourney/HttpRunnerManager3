@@ -1,10 +1,12 @@
-HttpRunnerManager(已停止维护)
+由于原httpRunnerManager不再维护，该版本是基于最新的httpRunner3.4.1适配开发，同时更新部分模块，调整至最新。修复原生部分原生bug
+=================
+python版本：3.6.8。由于时间原因，部分报告页面展示还存在不少bug，目前持续修复中
 =================
 
 Design Philosophy
 -----------------
 
-基于HttpRunner的接口自动化测试平台: `HttpRunner`_, `djcelery`_ and `Django`_. HttpRunner手册: http://cn.httprunner.org/
+基于HttpRunner的接口自动化测试平台: `HttpRunner`_, `djcelery`_ and `Django`_
 
 Key Features
 ------------
@@ -18,7 +20,6 @@ Key Features
 - 环境管理：可添加运行环境，运行用例时可以一键切换环境
 - 报告查看：所有异步执行的用例均可在线查看报告，可自主命名，为空默认时间戳保存，
 - 定时任务：可设置定时任务，遵循crontab表达式，可在线开启、关闭，完毕后支持邮件通知
-- 持续集成：jenkins对接，开发中。。。
 
 本地开发环境部署
 --------
@@ -147,11 +148,7 @@ Key Features
 
 
 
-###  其他
-MockServer：https://github.com/yinquanwang/MockServer
 
-因时间限制，平台可能还有很多潜在的bug，使用中如遇到问题，欢迎issue,
-如果任何疑问好好的建议欢迎github提issue, 或者可以直接加群(628448476)，反馈会比较快
 
 
 

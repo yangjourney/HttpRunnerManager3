@@ -2473,3 +2473,4 @@ KeyError: 'name'
 2020-08-11 19:46:57,914 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/5/ HTTP/1.1" 200 75210
 2020-08-11 19:52:14,411 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\tasks.py changed, reloading.
 2020-08-11 19:52:15,597 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-11 21:27:29,781 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
