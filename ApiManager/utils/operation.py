@@ -1,14 +1,19 @@
 import datetime
+import io
+import json
 import logging
 import os
+from sys import version_info
+from typing import Iterable
+from jinja2 import Template,escape
+from base64 import b64encode
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import DataError
-
+from httprunner import __version__
 from ApiManager import separator
 from ApiManager.models import ProjectInfo, ModuleInfo, TestCaseInfo, UserInfo, EnvInfo, TestReports, DebugTalk, \
     TestSuite
-
 
 logger = logging.getLogger('HttpRunnerManager')
 
@@ -428,7 +433,7 @@ def copy_suite_data(id, name):
     return 'ok'
 
 
-def add_test_reports(runner, report_name=None):
+def add_test_reports(summaryDict, report_name=None):
     """
     定时任务或者异步执行报告信息落地
     :param start_at: time: 开始时间
@@ -436,25 +441,113 @@ def add_test_reports(runner, report_name=None):
     :param kwargs: dict: 报告结果值
     :return:
     """
-    time_stamp = int(runner.summary["time"]["start_at"])
-    runner.summary['time']['start_datetime'] = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-    report_name = report_name if report_name else runner.summary['time']['start_datetime']
-    runner.summary['html_report_name'] = report_name
+    time_stamp = int(summaryDict["time"]["start_at"])
+    summaryDict["time"]["start_at_iso_format"] = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
+    report_name = report_name if report_name else summaryDict["time"]["start_at_iso_format"]
+    summaryDict['html_report_name'] = report_name
 
-    report_path = os.path.join(os.getcwd(), "reports{}{}.html".format(separator, int(runner.summary['time']['start_at'])))
-    runner.gen_html_report(html_report_template=os.path.join(os.getcwd(), "templates{}extent_report_template.html".format(separator)))
+    #report_path = os.path.join(os.getcwd(), "reports{}{}.html".format(separator, str(summaryDict["time"]["start_at_iso_format"])))
+    hrun_version = __version__
+    python_version = str(version_info.major) + str(version_info.minor) + str(version_info.micro)
+    summaryDict['platform'] = {'httprunner_version': hrun_version,'python_version' : python_version}
+    report_path = make_html_report(summaryDict,html_report_template=os.path.join(os.getcwd(), "templates{}extent_report_template.html".format(separator)))
 
     with open(report_path, encoding='utf-8') as stream:
         reports = stream.read()
 
     test_reports = {
         'report_name': report_name,
-        'status': runner.summary.get('success'),
-        'successes': runner.summary.get('stat').get('successes'),
-        'testsRun': runner.summary.get('stat').get('testsRun'),
-        'start_at': runner.summary['time']['start_datetime'],
+        'status': summaryDict["success"],
+        'successes': summaryDict["success"],
+        'testsRun': summaryDict["case_id"],
+        'start_at': summaryDict["time"]["start_at_iso_format"],
         'reports': reports
     }
 
     TestReports.objects.create(**test_reports)
     return report_path
+
+
+
+def make_html_report(summaryDict, html_report_name = None, html_report_template = None):
+    """ render html report with specified report name and template
+        if html_report_name is not specified, use current datetime
+        if html_report_template is not specified, use default report template
+    """
+    if not html_report_template:
+        html_report_template = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            "templates",
+            "default_report_template.html"
+        )
+        logger.debug("No html report template specified, use default.")
+    else:
+        logger.info("render with html report template: {}".format(html_report_template))
+
+    logger.info("Start to render Html report ...")
+    logger.debug("render data: {}".format(summaryDict))
+
+    report_dir_path = os.path.join(os.getcwd(), "reports")
+    start_at_timestamp = int(summaryDict["time"]["start_at"])
+    summaryDict["time"]["start_at_iso_format"] = datetime.datetime.fromtimestamp(start_at_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    if html_report_name:
+        summaryDict["html_report_name"] = html_report_name
+        report_dir_path = os.path.join(report_dir_path, html_report_name)
+        html_report_name += "-{}.html".format(start_at_timestamp)
+    else:
+        summaryDict["html_report_name"] = ""
+        html_report_name = "{}.html".format(start_at_timestamp)
+
+    if not os.path.isdir(report_dir_path):
+        os.makedirs(report_dir_path)
+
+    for index, suite_summary in enumerate(summaryDict["step_datas"]):
+        if not suite_summary.get("name"):
+            suite_summary["name"] = "test suite {}".format(index)
+        for record in suite_summary.get("data").get("req_resps"):
+            stringify_data(record, 'request')
+            stringify_data(record, 'response')
+
+    with io.open(html_report_template, "r", encoding='utf-8') as fp_r:
+        template_content = fp_r.read()
+        report_path = os.path.join(report_dir_path, html_report_name)
+        with io.open(report_path, 'w', encoding='utf-8') as fp_w:
+            rendered_content = Template(template_content).render(summaryDict)
+            fp_w.write(rendered_content)
+
+    logger.info("Generated Html report: {}".format(report_path))
+    return report_path
+
+def stringify_data(meta_data, request_or_response):
+
+    request_or_response_dict = meta_data[request_or_response]
+
+    for key, value in request_or_response_dict.items():
+
+        if isinstance(value, list):
+            value = json.dumps(value, indent=2, ensure_ascii=False)
+
+        elif isinstance(value, bytes):
+            try:
+                encoding = meta_data["response"].get("encoding")
+                if not encoding or encoding == "None":
+                    encoding = "utf-8"
+
+                content_type = meta_data["response"]["content_type"]
+                if "image" in content_type:
+                    meta_data["response"]["content_type"] = "image"
+                    value = "data:{};base64,{}".format(
+                        content_type,
+                        b64encode(value).decode(encoding)
+                    )
+                else:
+                    value = escape(value.decode(encoding))
+            except UnicodeDecodeError:
+                pass
+
+        elif not isinstance(value, (str, bytes, int, float, Iterable)):
+            # class instance, e.g. MultipartEncoder()
+            value = repr(value)
+
+        meta_data[request_or_response][key] = value
+

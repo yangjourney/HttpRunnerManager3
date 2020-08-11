@@ -10,6 +10,7 @@ from django.shortcuts import render_to_response
 from django.utils.safestring import mark_safe
 from djcelery.models import PeriodicTask
 from dwebsocket import accept_websocket
+from httprunner.exceptions import ValidationFailure
 
 from ApiManager import separator
 from ApiManager.models import ProjectInfo, ModuleInfo, TestCaseInfo, UserInfo, EnvInfo, TestReports, DebugTalk, \
@@ -17,13 +18,13 @@ from ApiManager.models import ProjectInfo, ModuleInfo, TestCaseInfo, UserInfo, E
 from ApiManager.tasks import main_hrun
 from ApiManager.utils.common import module_info_logic, project_info_logic, case_info_logic, config_info_logic, \
     set_filter_session, get_ajax_msg, register_info_logic, task_logic, load_modules, upload_file_logic, \
-    init_filter_session, get_total_values, timestamp_to_datetime
+    init_filter_session, get_total_values, timestamp_to_datetime,getAllYml
 from ApiManager.utils.operation import env_data_logic, del_module_data, del_project_data, del_test_data, copy_test_data, \
     del_report_data, add_suite_data, copy_suite_data, del_suite_data, edit_suite_data, add_test_reports
 from ApiManager.utils.pagination import get_pager_info
 from ApiManager.utils.runner import run_by_batch, run_test_by_type
 from ApiManager.utils.task_opt import delete_task, change_task_status
-from ApiManager.utils.testcase import get_time_stamp
+from ApiManager.utils.testcase import get_time_stamp,dump_yaml_to_dict,fail_request_handle
 from httprunner import HttpRunner
 
 logger = logging.getLogger('HttpRunnerManager')
@@ -213,7 +214,7 @@ def run_test(request):
     kwargs = {
         "failfast": False,
     }
-    runner = HttpRunner(**kwargs)
+    runner = HttpRunner()
 
     testcase_dir_path = os.path.join(os.getcwd(), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
@@ -233,11 +234,27 @@ def run_test(request):
         type = request.POST.get('type', 'test')
 
         run_test_by_type(id, base_url, testcase_dir_path, type)
-        runner.run(testcase_dir_path)
+        #获取文件夹下所有的yml测试文件
+        test_dic,error_requests = [],[]
+        getAllYml(testcase_dir_path,test_dic)
+        logger.info("testcase_dir_path是:{}".format(testcase_dir_path))
+        for test_case_dir in test_dic:
+            try:
+                runner.run_path(test_case_dir)
+            except Exception as e:
+                fail_request_datas = dump_yaml_to_dict(test_case_dir)
+                logger.info("fail_request_datas的值：{}".format(fail_request_datas))
+                fail_data = fail_request_handle(fail_request_datas, str(e))
+                error_requests.append(fail_data)
+                logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
         shutil.rmtree(testcase_dir_path)
-        runner.summary = timestamp_to_datetime(runner.summary, type=False)
-
-        return render_to_response('report_template.html', runner.summary)
+        summary = timestamp_to_datetime(runner.get_summary(), type=False)
+        if error_requests:
+            for err_request in error_requests:
+                for err in err_request:
+                    summary['step_datas'].append(err)
+        logger.info("现在打印的是最后的summary: {}".format(summary))
+        return render_to_response('report_template.html', summary)
 
 
 @login_check
@@ -251,7 +268,7 @@ def run_batch_test(request):
     kwargs = {
         "failfast": False,
     }
-    runner = HttpRunner(**kwargs)
+    runner = HttpRunner()
 
     testcase_dir_path = os.path.join(os.getcwd(), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
@@ -273,13 +290,26 @@ def run_batch_test(request):
             run_by_batch(test_list, base_url, testcase_dir_path, type=type, mode=True)
         else:
             run_by_batch(test_list, base_url, testcase_dir_path)
-
-        runner.run(testcase_dir_path)
+        error_requests,test_dic = [],[]
+        getAllYml(testcase_dir_path,test_dic)
+        for test_case_dir in test_dic:
+            try:
+                runner.run_path(test_case_dir)
+            except Exception as e:
+                fail_request_datas = dump_yaml_to_dict(test_case_dir)
+                logger.info("fail_request_datas的值：{}".format(fail_request_datas))
+                fail_data = fail_request_handle(fail_request_datas,str(e))
+                error_requests.append(fail_data)
+                logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'],str(e)))
 
         shutil.rmtree(testcase_dir_path)
-        runner.summary = timestamp_to_datetime(runner.summary,type=False)
-
-        return render_to_response('report_template.html', runner.summary)
+        summary = timestamp_to_datetime(runner.get_summary(),type=False)
+        if error_requests:
+            for err_request in error_requests:
+                for err in err_request:
+                    summary['step_datas'].append(err)
+        logger.info("现在打印的是最后的summary: {}".format(summary))
+        return render_to_response('report_template.html', summary)
 
 
 @login_check
@@ -426,14 +456,16 @@ def edit_case(request, id=None):
         testcase_lists = json.loads(request.body.decode('utf-8'))
         msg = case_info_logic(type=False, **testcase_lists)
         return HttpResponse(get_ajax_msg(msg, '/api/test_list/1/'))
-
     test_info = TestCaseInfo.objects.get_case_by_id(id)
     request = eval(test_info[0].request)
+    logger.info("request的内容：{}".format(request))
     include = eval(test_info[0].include)
+    info = test_info[0].__dict__
+    logger.info("info的内容：{}".format(info))
     manage_info = {
         'account': account,
-        'info': test_info[0],
-        'request': request['test'],
+        'info': test_info[0].__dict__,
+        'request': request,
         'include': include,
         'project': ProjectInfo.objects.all().values('project_name').order_by('-create_time')
     }

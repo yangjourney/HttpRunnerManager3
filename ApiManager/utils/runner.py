@@ -1,10 +1,12 @@
+import logging
 import os
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from ApiManager.models import TestCaseInfo, ModuleInfo, ProjectInfo, DebugTalk, TestSuite
-from ApiManager.utils.testcase import dump_python_file, dump_yaml_file
+from ApiManager.utils.testcase import dump_python_file, dump_yaml_file, modify_validate
 
+logger = logging.getLogger('HttpRunnerManager')
 
 def run_by_single(index, base_url, path):
     """
@@ -13,17 +15,16 @@ def run_by_single(index, base_url, path):
     :param base_url: str：环境地址
     :return: dict
     """
-    config = {
+    testcase_list = {
         'config': {
             'name': '',
-            'request': {
-                'base_url': base_url
-            }
+            'verify': "false",
+            'variables': {},
+            'base_url': base_url
         }
     }
-    testcase_list = []
+    testcase_list['teststeps'] = []
 
-    testcase_list.append(config)
 
     try:
         obj = TestCaseInfo.objects.get(id=index)
@@ -36,10 +37,12 @@ def run_by_single(index, base_url, path):
     project = obj.belong_project
     module = obj.belong_module.module_name
 
-    config['config']['name'] = name
+    testcase_list['config']['name'] = name
 
     testcase_dir_path = os.path.join(path, project)
-
+    #加载全局变量
+    if request['request']['url'] == '' and "variables" in request.keys():
+        testcase_list['config']['variables'] = request['variables']
     if not os.path.exists(testcase_dir_path):
         os.makedirs(testcase_dir_path)
 
@@ -59,22 +62,22 @@ def run_by_single(index, base_url, path):
         try:
             if isinstance(test_info, dict):
                 config_id = test_info.pop('config')[0]
-                config_request = eval(TestCaseInfo.objects.get(id=config_id).request)
-                config_request.get('config').get('request').setdefault('base_url', base_url)
-                config_request['config']['name'] = name
-                testcase_list[0] = config_request
+                config_request = eval(TestCaseInfo.objects.get(id=config_id).request)['config']
+                #config_request.get('config').get('request').setdefault('base_url', base_url)
+                #config_request['config']['name'] = name
+                testcase_list['teststeps'].append(modify_validate(config_request))
             else:
                 id = test_info[0]
                 pre_request = eval(TestCaseInfo.objects.get(id=id).request)
-                testcase_list.append(pre_request)
+                testcase_list['teststeps'].append(modify_validate(pre_request))
 
         except ObjectDoesNotExist:
             return testcase_list
 
-    if request['test']['request']['url'] != '':
-        testcase_list.append(request)
-
-    dump_yaml_file(os.path.join(testcase_dir_path, name + '.yml'), testcase_list)
+    if request['request']['url'] != '':
+        testcase_list['teststeps'].append(modify_validate(request))
+    testcase_dir_path = os.path.join(testcase_dir_path, name + '.yml')
+    dump_yaml_file(testcase_dir_path, testcase_list)
 
 
 def run_by_suite(index, base_url, path):

@@ -17,6 +17,7 @@
                 <li><a href="javascript:;" data-target="#tab1">messages</a></li>
                 <li><a href="javascript:;" data-target="#tab2">variables/parameters/hooks</a></li>
                 <li><a href="javascript:;" data-target="#tab3">request</a></li>
+                <li><a href="javascript:;" data-target="#tab4">extract/validate</a></li>
             </ul>
 
             <div class="am-tabs-bd">
@@ -116,6 +117,23 @@
                     <div class="form-inline">
                         <div class="form-group">
                             <div class="input-group">
+                                <div class="input-group-addon">URL</div>
+                                <input type="text" class="form-control" id="url" name="url" placeholder="api url">
+                            </div>
+                        </div>
+                        <div class="form-group ">
+                            <div class="input-group">
+                                <div class="input-group-addon">Method</div>
+                                <select class="form-control" name="method" id="method">
+                                    <option>POST</option>
+                                    <option>GET</option>
+                                    <option>PUT</option>
+                                    <option>DELETE</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
                                 <div class="input-group-addon">Type</div>
                                 <select class="form-control" name="DataType" id="config_data_type">
                                     <option>data</option>
@@ -162,6 +180,46 @@
                             </table>
                         </form>
                     </div>
+                </div>
+                <div class="am-tab-panel" id="tab4">
+                    <button class="btn btn-info" value="添 加" onclick="add_row('extract')">add extract
+                    </button>
+                    <button class="btn btn-danger" value="删 除" onclick="del_row('extract')">del extract
+                    </button>
+                    <button class="btn btn-info" value="添 加" onclick="add_row('validate')">add validate</button>
+                    <button class="btn btn-danger" value="删 除" onclick="del_row('validate')">del validate</button>
+                    <form id="form_extract">
+                        <table class="table table-hover table-condensed table-bordered table-striped" id="extract">
+                            <caption>extract:</caption>
+                            <thead>
+                            <tr class="active text-success">
+                                <th width="5%" align="center">Option</th>
+                                <th width="30%" align="center">Key</th>
+                                <th width="55%" align="center">Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </form>
+
+                    <form id="form_validate">
+                        <table class="table table-hover table-condensed table-bordered table-striped" id="validate">
+                            <caption>validate:</caption>
+                            <thead>
+                            <tr class="active text-success">
+                                <th width="2%" align="center">Option</th>
+                                <th width="32%" align="center">Check</th>
+                                <th width="10%" align="center">Comparator</th>
+                                <th width="8%" align="center">Type</th>
+                                <th width="48%" align="center">Expected</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </form>
+
                 </div>
             </div>
 

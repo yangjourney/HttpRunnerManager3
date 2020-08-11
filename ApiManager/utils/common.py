@@ -6,10 +6,13 @@ import os
 import platform
 from json import JSONDecodeError
 
+
 import yaml
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from djcelery.models import PeriodicTask
+from jinja2 import Template,escape
+from base64 import b64encode
 
 from ApiManager.models import ModuleInfo, TestCaseInfo, TestReports, TestSuite
 from ApiManager.utils.operation import add_project_data, add_module_data, add_case_data, add_config_data, \
@@ -127,6 +130,8 @@ def key_value_dict(keyword, **kwargs):
                     if msg == 'exception':
                         return '{keyword}: {val}格式错误,不是{type}类型'.format(keyword=keyword, val=val, type=type)
                     value[key] = msg
+                else:
+                    value[key] = val
                 dicts.update(value)
         return dicts
 
@@ -266,7 +271,7 @@ def case_info_logic(type=True, **kwargs):
 
         extract = test.pop('extract')
         if extract:
-            test.setdefault('extract', key_value_list('extract', **extract))
+            test.setdefault('extract', key_value_dict('extract',**extract))
 
         request_data = test.get('request').pop('request_data')
         data_type = test.get('request').pop('type')
@@ -285,9 +290,7 @@ def case_info_logic(type=True, **kwargs):
 
         variables = test.pop('variables')
         if variables:
-            variables_list = key_value_list('variables', **variables)
-            if not isinstance(variables_list, list):
-                return variables_list
+            variables_list = key_value_dict('variables', **variables)
             test.setdefault('variables', variables_list)
 
         parameters = test.pop('parameters')
@@ -368,6 +371,17 @@ def config_info_logic(type=True, **kwargs):
             if not isinstance(variables_list, list):
                 return variables_list
             config.setdefault('variables', variables_list)
+        logger.info("config的值：{}".format(config))
+        validate = config.pop('validate')
+        if validate:
+            validate_list = key_value_list('validate', **validate)
+            if not isinstance(validate_list, list):
+                return validate_list
+            config.setdefault('validate', validate_list)
+
+        extract = config.pop('extract')
+        if extract:
+            config.setdefault('extract', key_value_dict('extract',**extract))
 
         parameters = config.pop('parameters')
         if parameters:
@@ -625,22 +639,46 @@ def update_include(include):
 
 def timestamp_to_datetime(summary, type=True):
     if not type:
-        time_stamp = int(summary["time"]["start_at"])
-        summary['time']['start_datetime'] = datetime.datetime. \
+        time_stamp = int(summary.time.start_at)
+        summary.time.start_at_iso_format = datetime.datetime. \
             fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-
-    for detail in summary['details']:
-        try:
-            time_stamp = int(detail['time']['start_at'])
-            detail['time']['start_at'] = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-        except Exception:
-            pass
-
-        for record in detail['records']:
-            try:
-                time_stamp = int(record['meta_data']['request']['start_timestamp'])
-                record['meta_data']['request']['start_timestamp'] = \
-                    datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-            except Exception:
-                pass
+        summary = summary.dict()
+        summary["html_report_name"] = summary["time"]["start_at_iso_format"]
+        successes, failures, errors, skipped = 0, 0, 0, 0
+        for step_data in summary["step_datas"]:
+            if 'validators' not in step_data['data']:
+                if step_data["success"]:
+                    successes += 1
+                else:
+                    failures += 1
+            else:
+                failure = False
+                for validator in step_data['data']['validators']['validate_extractor']:
+                    if validator['check_result'] == "fail":
+                        failure = True
+                        step_data['success'] = False
+                        break
+                if failure:
+                    failures += 1
+                else:
+                    successes += 1
+        summary["count"] = {"successes": successes, "failures": failures, "errors": errors, "skipped": skipped}
+    else:
+        summary = summary.dict()
     return summary
+
+
+def getAllYml(path,dic):
+    """
+    获取文件夹下所有.yml的文件，并放入到dic中
+    """
+    get_dir = os.listdir(path)
+    for i in get_dir:
+        sub_dir = os.path.join(path,i)
+        if os.path.isdir(sub_dir):
+            getAllYml(sub_dir,dic)
+        elif i.endswith(".yml"):
+            dic.append(sub_dir)
+    return dic
+
+

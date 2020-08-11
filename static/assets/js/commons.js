@@ -207,7 +207,7 @@ function case_ajax(type, editor) {
     });
     caseInfo['include'] = include;
     const test = {
-        "test": {
+        'test' : {
             "name": caseInfo,
             "parameters": parameters,
             "variables": variables,
@@ -222,7 +222,8 @@ function case_ajax(type, editor) {
             "validate": validate,
             "hooks": hooks,
         }
-    };
+    }
+    ;
     if (type === 'edit') {
         url = '/api/edit_case/';
     } else {
@@ -251,11 +252,16 @@ function case_ajax(type, editor) {
 }
 
 function config_ajax(type) {
+    var url = $("#url").serializeJSON();
+    var method = $("#method").serializeJSON();
     var dataType = $("#config_data_type").serializeJSON();
     var caseInfo = $("#form_config").serializeJSON();
     var variables = $("#config_variables").serializeJSON();
     var parameters = $('#config_params').serializeJSON();
     var hooks = $('#config_hooks').serializeJSON();
+    var extract = $("#form_extract").serializeJSON();
+    var validate = $("#form_validate").serializeJSON();
+
     var request_data = null;
     if (dataType.DataType === 'json') {
         try {
@@ -276,10 +282,14 @@ function config_ajax(type) {
             "variables": variables,
             "parameters": parameters,
             "request": {
+                "url": url.url,
+                "method": method.method,
                 "headers": headers,
                 "type": dataType.DataType,
                 "request_data": request_data
             },
+            "extract": extract,
+            "validate": validate,
             "hooks": hooks,
 
         }

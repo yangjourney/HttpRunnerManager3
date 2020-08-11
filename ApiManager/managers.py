@@ -96,7 +96,7 @@ class TestCaseInfoManager(models.Manager):
         case_info = kwargs.get('test').pop('case_info')
         self.create(name=kwargs.get('test').get('name'), belong_project=case_info.pop('project'),
                     belong_module=belong_module,
-                    author=case_info.pop('author'), include=case_info.pop('include'), request=kwargs)
+                    author=case_info.pop('author'), include=case_info.pop('include'), request=kwargs.get('test'))
 
     def update_case(self, belong_module, **kwargs):
         case_info = kwargs.get('test').pop('case_info')
@@ -106,7 +106,7 @@ class TestCaseInfoManager(models.Manager):
         obj.name = kwargs.get('test').get('name')
         obj.author = case_info.pop('author')
         obj.include = case_info.pop('include')
-        obj.request = kwargs
+        obj.request = kwargs.get('test')
         obj.save()
 
     def insert_config(self, belong_module, **kwargs):

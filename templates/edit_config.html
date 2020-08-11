@@ -17,6 +17,7 @@
                 <li><a href="javascript:;" data-target="#tab1">messages</a></li>
                 <li><a href="javascript:;" data-target="#tab2">variables/parameters/hooks</a></li>
                 <li><a href="javascript:;" data-target="#tab3">request</a></li>
+                <li><a href="javascript:;" data-target="#tab4">extract/validate</a></li>
             </ul>
 
             <div class="am-tabs-bd">
@@ -230,6 +231,40 @@
                 </div>
                 <div class="am-tab-panel" id="tab3">
                     <div class="form-inline">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon">URL</div>
+                                <input type="text" class="form-control am-input-sm " placeholder="api url"
+                                       name="url"
+                                       id="url" value="{{ request.request.url }}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon">Method</div>
+                                <select class="form-control" name="method" id="method">
+                                    <option>{{ request.request.method }}</option>
+                                    {% if request.request.method == 'GET' %}
+                                        <option>POST</option>
+                                        <option>PUT</option>
+                                        <option>DELETE</option>
+                                    {% elif request.request.method == 'POST' %}
+                                        <option>GET</option>
+                                        <option>PUT</option>
+                                        <option>DELETE</option>
+                                    {% elif request.request.method == 'PUT' %}
+                                        <option>GET</option>
+                                        <option>POST</option>
+                                        <option>DELETE</option>
+                                    {% elif request.request.method == 'DELETE' %}
+                                        <option>GET</option>
+                                        <option>POST</option>
+                                        <option>DELETE</option>
+
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
                         <div class="input-group">
                             <div class="input-group-addon">Type</div>
                             <select class="form-control" name="DataType" id="config_data_type">
@@ -391,6 +426,190 @@
                             </table>
                         </form>
                     </div>
+                </div>
+                <div class="am-tab-panel" id="tab4">
+                    <button class="btn btn-info" value="添 加" onclick="add_row('extract')">add extract</button>
+                    <button class="btn btn-danger" value="删 除" onclick="del_row('extract')">del extract</button>
+                    <button class="btn btn-info" value="添 加" onclick="add_row('validate')">add validate</button>
+                    <button class="btn btn-danger" value="删 除" onclick="del_row('validate')">del validate</button>
+                    <form id="form_extract">
+                        <table class="table table-hover table-condensed table-bordered table-striped" id="extract">
+                            <caption>extract:</caption>
+                            <thead>
+                            <tr class="active text-success">
+                                <th width="5%" align="center">Option</th>
+                                <th width="40%" align="center">Key</th>
+                                <th width="55%" align="center">Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% if 'extract' in request.keys %}
+                                    {% for key, value in request.extract.items %}
+                                        <tr>
+                                            <td><input type="checkbox" name="extract" style="width:55px"></td>
+                                            <td><input type="text" name='test[][key]' value="{{ key }}"
+                                                       style="width:100%; border: none"></td>
+                                            <td><input type="text" name='test[][value]' value="{{ value }}"
+                                                       style="width:100%; border: none"></td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </form>
+                    <form id="form_validate">
+                        <table class="table table-hover table-condensed table-bordered table-striped" id="validate">
+                            <caption>validate:</caption>
+                            <thead>
+                            <tr class="active text-success">
+                                <th width="2%" align="center">Option</th>
+                                <th width="30%" align="center">Check</th>
+                                <th width="10%" align="center">Comparator</th>
+                                <th width="8%" align="center">Type</th>
+                                <th width="50%" align="center">Expected</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for foo in request.validate %}
+                                <tr>
+                                    <td><input type="checkbox" name="validate"
+                                               style="width:55px"></td>
+                                    <td><input type="text" name='test[][key]' value="{{ foo.check }}"
+                                               style="width:100%; border: none"></td>
+                                    <td><select name='test[][comparator]' class="form-control"
+                                                style="height: 25px; font-size: 15px; padding-top: 0px; padding-left: 0px; border: none">
+                                        {% ifequal foo.comparator 'equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>equals</option>
+                                        {% endifequal %}
+
+                                        {% ifequal foo.comparator 'contains' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>contains</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'startswith' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>startswith</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'endswith' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>endswith</option>
+                                        {% endifequal %}
+
+                                        {% ifequal foo.comparator 'regex_match' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>regex_match</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'type_match' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>type_match</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'contained_by' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>contained_by</option>
+                                        {% endifequal %}
+
+                                        {% ifequal foo.comparator 'less_than' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>less_than</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'less_than_or_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>less_than_or_equals</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'greater_than' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>greater_than</option>
+                                        {% endifequal %}
+
+                                        {% ifequal foo.comparator 'greater_than_or_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>greater_than_or_equals</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'not_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>not_equals</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'string_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>string_equals</option>
+                                        {% endifequal %}
+
+                                        {% ifequal foo.comparator 'length_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>length_equals</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'length_greater_than' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>length_greater_than</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'length_greater_than_or_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>length_greater_than_or_equals</option>
+                                        {% endifequal %}
+
+                                        {% ifequal foo.comparator 'length_less_than' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>length_less_than</option>
+                                        {% endifequal %}
+                                        {% ifequal foo.comparator 'length_less_than_or_equals' %}
+                                            <option selected>{{ foo.comparator }}</option>
+                                        {% else %}
+                                            <option>length_less_than_or_equals</option>
+                                        {% endifequal %}
+
+                                    </select></td>
+                                    <td>
+                                        <select name='test[][type]'
+                                                class='form-control'
+                                                style='height: 25px; font-size: 15px; padding-top: 0px; padding-left: 0px; border: none'>
+                                            {% if foo.expected|data_type == 'str' %}
+                                                <option>string</option>
+                                                <option>int</option>
+                                                <option>float</option>
+                                                <option>boolean</option>
+                                            {% elif foo.expected|data_type == 'int' %}
+                                                <option>int</option>
+                                                <option>string</option>
+                                                <option>float</option>
+                                                <option>boolean</option>
+                                            {% elif foo.expected|data_type == 'float' %}
+                                                <option>float</option>
+                                                <option>string</option>
+                                                <option>int</option>
+                                                <option>boolean</option>
+                                            {% elif foo.expected|data_type == 'bool' %}
+                                                <option>boolean</option>
+                                                <option>string</option>
+                                                <option>int</option>
+                                                <option>float</option>
+                                            {% endif %}
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name='test[][value]' value="{{ foo.expected }}"
+                                               style="width:100%; border: none"></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
                 </div>
             </div>
 

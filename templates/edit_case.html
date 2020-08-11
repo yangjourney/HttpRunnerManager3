@@ -126,7 +126,8 @@
                                     <select id="belong_module_id" name="module" class="form-control"
                                             onchange="auto_load('#belong_message', '/api/add_case/', '#belong_case_id', 'case');
                                         auto_load('#belong_message', '/api/edit_case/', '#config', 'config')">
-                                        <option value="{{ info.belong_module.id }}">{{ info.belong_module.module_name }}</option>
+                                        <option value="{{ info.belong_module_id }}">{{ info.belong_module.module_name }}</option>
+                                        <option value="请选择">请选择</option>
                                     </select>
                                 </div>
                             </div>
@@ -208,10 +209,9 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for foo in request.variables %}
+                            {% for key, value in request.variables.items %}
                                 <tr>
                                     <td><input type="checkbox" name="variables" style="width:55px"></td>
-                                    {% for key, value in foo.items %}
 
                                         <td><input type="text" name="test[][key]"
                                                    value="{{ key }}" style="width:100%; border: none"></td>
@@ -246,7 +246,6 @@
                                         <td><input type="text"
                                                    name="test[][value]" value="{{ value }}"
                                                    style="width:100%; border: none"></td>
-                                    {% endfor %}
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -564,18 +563,17 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for foo in request.extract %}
-                                <tr>
-                                    <td><input type="checkbox" name="extract" style="width:55px"></td>
-                                    {% for key, value in foo.items %}
-
-                                        <td><input type="text" name='test[][key]' value="{{ key }}"
-                                                   style="width:100%; border: none"></td>
-                                        <td><input type="text" name='test[][value]' value="{{ value }}"
-                                                   style="width:100%; border: none"></td>
+                                {% if 'extract' in request.keys %}
+                                    {% for key, value in request.extract.items %}
+                                        <tr>
+                                            <td><input type="checkbox" name="extract" style="width:55px"></td>
+                                            <td><input type="text" name='test[][key]' value="{{ key }}"
+                                                       style="width:100%; border: none"></td>
+                                            <td><input type="text" name='test[][value]' value="{{ value }}"
+                                                       style="width:100%; border: none"></td>
+                                        </tr>
                                     {% endfor %}
-                                </tr>
-                            {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </form>
