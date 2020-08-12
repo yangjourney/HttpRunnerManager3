@@ -447,9 +447,6 @@ def add_test_reports(summaryDict, report_name=None):
     summaryDict['html_report_name'] = report_name
 
     #report_path = os.path.join(os.getcwd(), "reports{}{}.html".format(separator, str(summaryDict["time"]["start_at_iso_format"])))
-    hrun_version = __version__
-    python_version = str(version_info.major) + str(version_info.minor) + str(version_info.micro)
-    summaryDict['platform'] = {'httprunner_version': hrun_version,'python_version' : python_version}
     report_path = make_html_report(summaryDict,html_report_template=os.path.join(os.getcwd(), "templates{}extent_report_template.html".format(separator)))
 
     with open(report_path, encoding='utf-8') as stream:

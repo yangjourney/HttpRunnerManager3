@@ -1,10 +1,15 @@
 import logging
 import os
+import shutil
+import time
+from sys import version_info
 
 from django.core.exceptions import ObjectDoesNotExist
-
+from httprunner import HttpRunner, __version__
 from ApiManager.models import TestCaseInfo, ModuleInfo, ProjectInfo, DebugTalk, TestSuite
-from ApiManager.utils.testcase import dump_python_file, dump_yaml_file, modify_validate
+from ApiManager.utils.common import getAllYml, timestamp_to_datetime
+from ApiManager.utils.testcase import dump_python_file, dump_yaml_file, modify_validate, dump_yaml_to_dict, \
+    fail_request_handle
 
 logger = logging.getLogger('HttpRunnerManager')
 
@@ -168,3 +173,46 @@ def run_test_by_type(id, base_url, path, type):
         run_by_suite(id, base_url, path)
     else:
         run_by_single(id, base_url, path)
+
+
+def main_run_cases(testset_path):
+    """
+    批量运行测试用例方法，包含异步，同步运行方式
+    :param testset_path: 测试用例本地地址
+    :return: summary （dict运行结果）
+    """
+    runner = HttpRunner()
+    test_dic, error_requests, sum_temps = [], [], []
+    getAllYml(testset_path, test_dic)
+    start_time = time.time()
+    for test_case_dir in test_dic:
+        logger.info("当前运行的用例文件为：{}".format(test_case_dir))
+        try:
+            runner.run_path(test_case_dir)
+        except Exception as e:
+            fail_request_datas = dump_yaml_to_dict(test_case_dir)
+            fail_data = fail_request_handle(fail_request_datas, str(e))
+            error_requests += fail_data
+            logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
+        sum_temp = runner.get_summary()
+        if sum_temp.success:
+            sum_temp = timestamp_to_datetime(sum_temp)
+            sum_temps += sum_temp
+        logger.info("{} 文件执行完之后生成的结果为：{}".format(test_case_dir, sum_temp))
+    end_time = time.time()
+    duration = end_time - start_time
+    shutil.rmtree(testset_path)
+    summary = {'name': '出入口', 'success': True,
+               'time': {'start_at': start_time, 'start_at_iso_format': start_time, 'end_time': end_time,
+                        'duration': duration}, 'step_datas': []}
+
+    summary['step_datas'] += sum_temps
+    summary['step_datas'] += error_requests
+
+    logger.info("生成报告前的summary：{}".format(summary))
+    summary = timestamp_to_datetime(summary, type=False)
+    summary['case_id'] = str(len(summary['step_datas']))
+    hrun_version = __version__
+    python_version = str(version_info.major) + "." + str(version_info.minor) + "." + str(version_info.micro)
+    summary['platform'] = {'httprunner_version': hrun_version, 'python_version': python_version}
+    return summary

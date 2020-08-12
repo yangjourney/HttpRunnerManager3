@@ -1,6 +1,7 @@
 # Create your tasks here
 from __future__ import absolute_import, unicode_literals
 
+import datetime
 import os
 import shutil
 import time
@@ -12,7 +13,7 @@ from ApiManager.models import ProjectInfo
 from ApiManager.utils.common import timestamp_to_datetime, getAllYml
 from ApiManager.utils.emails import send_email_reports
 from ApiManager.utils.operation import add_test_reports
-from ApiManager.utils.runner import run_by_project, run_by_module, run_by_suite
+from ApiManager.utils.runner import run_by_project, run_by_module, run_by_suite, main_run_cases
 from ApiManager.utils.testcase import get_time_stamp,dump_yaml_to_dict,fail_request_handle
 from httprunner import HttpRunner
 from loguru import logger
@@ -28,28 +29,8 @@ def main_hrun(testset_path, report_name):
     """
     logger.info("运行用例")
 
-    runner = HttpRunner()
-    test_dic,error_requests = [],[]
-    getAllYml(testset_path, test_dic)
-    for test_case_dir in test_dic:
-        logger.info("当前运行的用例文件为：{}".format(test_case_dir))
-        try:
-            runner.run_path(test_case_dir)
-        except Exception as e:
-            fail_request_datas = dump_yaml_to_dict(test_case_dir)
-            fail_data = fail_request_handle(fail_request_datas, str(e))
-            error_requests.append(fail_data)
-            logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
-
-    shutil.rmtree(testset_path)
-    summary = timestamp_to_datetime(runner.get_summary(), type=False)
-    if error_requests:
-        for err_request in error_requests:
-            for err in err_request:
-                summary['step_datas'].append(err)
-    case_id = summary.pop('case_id')
-    if not case_id:
-        summary['case_id'] = str(int(time.time()))
+    #运行测试用例
+    summary = main_run_cases(testset_path)
     report_path = add_test_reports(summary, report_name=report_name)
     os.remove(report_path)
 
@@ -183,6 +164,8 @@ def suite_hrun(name, base_url, suite, receiver):
             fail_data = fail_request_handle(fail_request_datas, str(e))
             error_requests.append(fail_data)
             logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
+        sum_temp = timestamp_to_datetime(runner.get_summary(), type=False)
+        logger.info("{} 文件执行完之后生成的结果为：{}".format(test_case_dir,sum_temp))
     shutil.rmtree(testcase_dir_path)
     summary = timestamp_to_datetime(runner.get_summary(), type=False)
     if error_requests:
@@ -192,7 +175,7 @@ def suite_hrun(name, base_url, suite, receiver):
     case_id = summary.pop('case_id')
     if not case_id:
         summary['case_id'] = str(int(time.time()))
-    report_path = add_test_reports(runner, report_name=name)
+    report_path = add_test_reports(summary, report_name=name)
 
     if receiver != '':
         send_email_reports(receiver, report_path)

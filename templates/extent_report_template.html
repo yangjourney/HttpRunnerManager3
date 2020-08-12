@@ -66,12 +66,12 @@
             </li>
             <li>
                 <a href='#!'>
-                    <span class='label blue darken-3'>HttpRunner {{ platform.httprunner_version }} </span>
+                    <span class='label blue darken-3'>HttpRunner: {{ platform.httprunner_version }} </span>
                 </a>
             </li>
             <li>
                 <a href='#!'>
-                    <span class='label blue darken-3'>{{ platform.python_version }} </span>
+                    <span class='label blue darken-3'>Python: {{ platform.python_version }} </span>
                 </a>
             </li>
             <li>
@@ -246,7 +246,7 @@
                             <div class='test-attributes'>
                                 <div class='category-list'>
                                     <span class='category label white-text'>{{ test_suite_summary.name }}</span>
-                                    <span class='category label white-text'>base_url: {{ test_suite_summary.base_url }}</span>
+                                    <!--<span class='category label white-text'>base_url: {{ test_suite_summary.base_url }}</span> -->
                                 </div>
                             </div>
                             <ul class='collapsible node-list' data-collapsible='accordion'>
@@ -283,7 +283,7 @@
                                 </div>
                                 <div class='collapsible-body' style="display: block">
                                     <div class='category-list right'>
-                                        <span class='category label white-text'>{{ name }}</span>
+                                        <!-- <span class='category label white-text'>{{ name }}</span> -->
                                         <span class='category label white-text'>{{ test_suite_summary.name }}</span>
                                     </div>
                                     <div class='node-steps'>
@@ -515,7 +515,7 @@
                                     </thead>
                                     <tbody>
                                     {% for test_suite_summary in step_datas %}
-                                        <tr style="border: 1px solid #49cc90; background-color: rgba(73, 204, 144, .1)">
+                                        <!--<tr style="border: 1px solid #49cc90; background-color: rgba(73, 204, 144, .1)">
                                             <td>{{ time.start_at }}</td>
                                             <td class='linked'
                                                 test-id='{{ test_suite_summary.name }}_{{ loop.index }}'>{{ test_suite_summary.name }}</td>
@@ -525,7 +525,7 @@
                                                 <td><span class='test-status fail'>fail</span></td>
                                             {% endif %}
 
-                                        </tr>
+                                        </tr> -->
                                         {% for req_resp in test_suite_summary.data.req_resps %}
                                             {% if req_resp.name !=  test_suite_summary.name %}
                                                 <tr>
@@ -704,7 +704,7 @@
 </div>
 <script>
     var test_suite_success = 0;
-    {%for test_suite_summary in details %}
+    {%for test_suite_summary in step_datas %}
         {% if test_suite_summary.success == True %}
             test_suite_success = test_suite_success + 1;
         {% endif %}

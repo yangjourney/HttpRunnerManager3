@@ -15,14 +15,14 @@ from httprunner.exceptions import ValidationFailure
 from ApiManager import separator
 from ApiManager.models import ProjectInfo, ModuleInfo, TestCaseInfo, UserInfo, EnvInfo, TestReports, DebugTalk, \
     TestSuite
-from ApiManager.tasks import main_hrun
+from ApiManager.tasks import main_hrun,project_hrun,suite_hrun,module_hrun
 from ApiManager.utils.common import module_info_logic, project_info_logic, case_info_logic, config_info_logic, \
     set_filter_session, get_ajax_msg, register_info_logic, task_logic, load_modules, upload_file_logic, \
     init_filter_session, get_total_values, timestamp_to_datetime,getAllYml
 from ApiManager.utils.operation import env_data_logic, del_module_data, del_project_data, del_test_data, copy_test_data, \
     del_report_data, add_suite_data, copy_suite_data, del_suite_data, edit_suite_data, add_test_reports
 from ApiManager.utils.pagination import get_pager_info
-from ApiManager.utils.runner import run_by_batch, run_test_by_type
+from ApiManager.utils.runner import run_by_batch, run_test_by_type, main_run_cases
 from ApiManager.utils.task_opt import delete_task, change_task_status
 from ApiManager.utils.testcase import get_time_stamp,dump_yaml_to_dict,fail_request_handle
 from httprunner import HttpRunner
@@ -224,6 +224,9 @@ def run_test(request):
         id = kwargs.pop('id')
         base_url = kwargs.pop('env_name')
         type = kwargs.pop('type')
+        logger.info("当前运行的用例类型为：{}".format(type))
+        logger.info("当前运行试用的类为：run_test")
+        logger.info(">>" * 30)
         run_test_by_type(id, base_url, testcase_dir_path, type)
         report_name = kwargs.get('report_name', None)
         main_hrun.delay(testcase_dir_path, report_name)
@@ -235,25 +238,7 @@ def run_test(request):
 
         run_test_by_type(id, base_url, testcase_dir_path, type)
         #获取文件夹下所有的yml测试文件
-        test_dic,error_requests = [],[]
-        getAllYml(testcase_dir_path,test_dic)
-        logger.info("testcase_dir_path是:{}".format(testcase_dir_path))
-        for test_case_dir in test_dic:
-            try:
-                runner.run_path(test_case_dir)
-            except Exception as e:
-                fail_request_datas = dump_yaml_to_dict(test_case_dir)
-                logger.info("fail_request_datas的值：{}".format(fail_request_datas))
-                fail_data = fail_request_handle(fail_request_datas, str(e))
-                error_requests.append(fail_data)
-                logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
-        shutil.rmtree(testcase_dir_path)
-        summary = timestamp_to_datetime(runner.get_summary(), type=False)
-        if error_requests:
-            for err_request in error_requests:
-                for err in err_request:
-                    summary['step_datas'].append(err)
-        logger.info("现在打印的是最后的summary: {}".format(summary))
+        summary = main_run_cases(testcase_dir_path)
         return render_to_response('report_template.html', summary)
 
 
@@ -265,19 +250,18 @@ def run_batch_test(request):
     :return:
     """
 
-    kwargs = {
-        "failfast": False,
-    }
-    runner = HttpRunner()
 
     testcase_dir_path = os.path.join(os.getcwd(), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
 
     if request.is_ajax():
         kwargs = json.loads(request.body.decode('utf-8'))
+        logger.info("前台传入参数：{}".format(kwargs))
         test_list = kwargs.pop('id')
         base_url = kwargs.pop('env_name')
         type = kwargs.pop('type')
+        logger.info("当前运行的用例类型为：{}".format(type))
+        logger.info("-" * 30)
         report_name = kwargs.get('report_name', None)
         run_by_batch(test_list, base_url, testcase_dir_path, type=type)
         main_hrun.delay(testcase_dir_path, report_name)
@@ -290,25 +274,8 @@ def run_batch_test(request):
             run_by_batch(test_list, base_url, testcase_dir_path, type=type, mode=True)
         else:
             run_by_batch(test_list, base_url, testcase_dir_path)
-        error_requests,test_dic = [],[]
-        getAllYml(testcase_dir_path,test_dic)
-        for test_case_dir in test_dic:
-            try:
-                runner.run_path(test_case_dir)
-            except Exception as e:
-                fail_request_datas = dump_yaml_to_dict(test_case_dir)
-                logger.info("fail_request_datas的值：{}".format(fail_request_datas))
-                fail_data = fail_request_handle(fail_request_datas,str(e))
-                error_requests.append(fail_data)
-                logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'],str(e)))
 
-        shutil.rmtree(testcase_dir_path)
-        summary = timestamp_to_datetime(runner.get_summary(),type=False)
-        if error_requests:
-            for err_request in error_requests:
-                for err in err_request:
-                    summary['step_datas'].append(err)
-        logger.info("现在打印的是最后的summary: {}".format(summary))
+        summary = main_run_cases(testcase_dir_path)
         return render_to_response('report_template.html', summary)
 
 

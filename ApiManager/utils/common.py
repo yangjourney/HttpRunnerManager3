@@ -638,11 +638,12 @@ def update_include(include):
 
 
 def timestamp_to_datetime(summary, type=True):
-    if not type:
-        time_stamp = int(summary.time.start_at)
-        summary.time.start_at_iso_format = datetime.datetime. \
-            fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
+    if not isinstance(summary, dict):
         summary = summary.dict()
+    if not type:
+        time_stamp = int(summary['time']['start_at'])
+        summary['time']['start_at_iso_format'] = datetime.datetime. \
+            fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
         summary["html_report_name"] = summary["time"]["start_at_iso_format"]
         successes, failures, errors, skipped = 0, 0, 0, 0
         for step_data in summary["step_datas"]:
@@ -657,6 +658,7 @@ def timestamp_to_datetime(summary, type=True):
                     if validator['check_result'] == "fail":
                         failure = True
                         step_data['success'] = False
+                        summary['success'] = False
                         break
                 if failure:
                     failures += 1
@@ -664,7 +666,14 @@ def timestamp_to_datetime(summary, type=True):
                     successes += 1
         summary["count"] = {"successes": successes, "failures": failures, "errors": errors, "skipped": skipped}
     else:
-        summary = summary.dict()
+        result = []
+        if len(summary['step_datas']) == 1:
+            result.append(summary['step_datas'][0])
+        else:
+            for summ in summary['step_datas']:
+                summ['name'] = summary['name'] + ":" + summ['name']
+                result.append(summ)
+        return result
     return summary
 
 
