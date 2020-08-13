@@ -44,7 +44,6 @@ def project_hrun(name, base_url, project, receiver):
     :return:
     """
     logger.info("异步运行整个项目")
-    runner = HttpRunner()
     id = ProjectInfo.objects.get(project_name=project).id
 
     testcase_dir_path = os.path.join(os.getcwd(), "suite")
@@ -52,26 +51,8 @@ def project_hrun(name, base_url, project, receiver):
 
     run_by_project(id, base_url, testcase_dir_path)
 
-    test_dic,error_requests = [],[]
-    getAllYml(testcase_dir_path, test_dic)
-    for test_case_dir in test_dic:
-        logger.info("当前运行的用例文件为：{}".format(test_case_dir))
-        try:
-            runner.run_path(test_case_dir)
-        except Exception as e:
-            fail_request_datas = dump_yaml_to_dict(test_case_dir)
-            fail_data = fail_request_handle(fail_request_datas, str(e))
-            error_requests.append(fail_data)
-            logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
-    shutil.rmtree(testcase_dir_path)
-    summary = timestamp_to_datetime(runner.get_summary(), type=False)
-    if error_requests:
-        for err_request in error_requests:
-            for err in err_request:
-                summary['step_datas'].append(err)
-    case_id = summary.pop('case_id')
-    if not case_id:
-        summary['case_id'] = str(int(time.time()))
+    # 运行测试用例
+    summary = main_run_cases(testcase_dir_path)
     report_path = add_test_reports(summary, report_name=name)
 
     if receiver != '':
@@ -89,7 +70,6 @@ def module_hrun(name, base_url, module, receiver):
     :return:
     """
     logger.info("异步运行模块")
-    runner = HttpRunner()
     module = list(module)
 
     testcase_dir_path = os.path.join(os.getcwd(), "suite")
@@ -101,29 +81,10 @@ def module_hrun(name, base_url, module, receiver):
     except ObjectDoesNotExist:
         return '找不到模块信息'
 
-    test_dic, error_requests = [], []
-    getAllYml(testcase_dir_path, test_dic)
-    for test_case_dir in test_dic:
-        logger.info("当前运行的用例文件为：{}".format(test_case_dir))
-        try:
-            runner.run_path(test_case_dir)
-        except Exception as e:
-            fail_request_datas = dump_yaml_to_dict(test_case_dir)
-            fail_data = fail_request_handle(fail_request_datas, str(e))
-            error_requests.append(fail_data)
-            logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
-    shutil.rmtree(testcase_dir_path)
-    summary = timestamp_to_datetime(runner.get_summary(), type=False)
-    if error_requests:
-        for err_request in error_requests:
-            for err in err_request:
-                summary['step_datas'].append(err)
-    case_id = summary.pop('case_id')
-    if not case_id:
-        summary['case_id'] = str(int(time.time()))
+    summary = main_run_cases(testcase_dir_path)
 
 
-    report_path = add_test_reports(runner, report_name=name)
+    report_path = add_test_reports(summary, report_name=name)
 
     if receiver != '':
         send_email_reports(receiver, report_path)
@@ -139,9 +100,8 @@ def suite_hrun(name, base_url, suite, receiver):
     :param module: str：模块名称
     :return:
     """
-    logger.info("异步运行模块")
+    logger.info("异步运行套件")
 
-    runner = HttpRunner()
     suite = list(suite)
 
     testcase_dir_path = os.path.join(os.getcwd(), "suite")
@@ -153,28 +113,7 @@ def suite_hrun(name, base_url, suite, receiver):
     except ObjectDoesNotExist:
         return '找不到Suite信息'
 
-    test_dic, error_requests = [], []
-    getAllYml(testcase_dir_path, test_dic)
-    for test_case_dir in test_dic:
-        logger.info("当前运行的用例文件为：{}".format(test_case_dir))
-        try:
-            runner.run_path(test_case_dir)
-        except Exception as e:
-            fail_request_datas = dump_yaml_to_dict(test_case_dir)
-            fail_data = fail_request_handle(fail_request_datas, str(e))
-            error_requests.append(fail_data)
-            logger.info("%s 接口处理报错: %s" % (fail_request_datas['config']['name'], str(e)))
-        sum_temp = timestamp_to_datetime(runner.get_summary(), type=False)
-        logger.info("{} 文件执行完之后生成的结果为：{}".format(test_case_dir,sum_temp))
-    shutil.rmtree(testcase_dir_path)
-    summary = timestamp_to_datetime(runner.get_summary(), type=False)
-    if error_requests:
-        for err_request in error_requests:
-            for err in err_request:
-                summary['step_datas'].append(err)
-    case_id = summary.pop('case_id')
-    if not case_id:
-        summary['case_id'] = str(int(time.time()))
+    summary = main_run_cases(testcase_dir_path)
     report_path = add_test_reports(summary, report_name=name)
 
     if receiver != '':

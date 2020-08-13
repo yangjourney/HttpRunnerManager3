@@ -425,16 +425,22 @@ def edit_case(request, id=None):
         return HttpResponse(get_ajax_msg(msg, '/api/test_list/1/'))
     test_info = TestCaseInfo.objects.get_case_by_id(id)
     request = eval(test_info[0].request)
-    logger.info("request的内容：{}".format(request))
     include = eval(test_info[0].include)
     info = test_info[0].__dict__
-    logger.info("info的内容：{}".format(info))
+    module_name = ModuleInfo.objects.get_module_by_id(info['belong_module_id'])[0].module_name
+    config_info = TestCaseInfo.objects.get_case_by_moduleId(info['belong_module_id'],type=2)
+    all_case_info = TestCaseInfo.objects.get_case_by_moduleId(info['belong_module_id'])
+    logger.info("config_info : {}".format(config_info[1].name))
     manage_info = {
         'account': account,
-        'info': test_info[0].__dict__,
+        'info': info,
         'request': request,
         'include': include,
-        'project': ProjectInfo.objects.all().values('project_name').order_by('-create_time')
+        'project': ProjectInfo.objects.all().values('project_name').order_by('-create_time'),
+        'module' : ModuleInfo.objects.all().values().order_by('-create_time'),
+        'config_info' : config_info,
+        'all_case' : all_case_info,
+        'module_name' : str(module_name)
     }
     return render_to_response('edit_case.html', manage_info)
 
@@ -461,7 +467,8 @@ def edit_config(request, id=None):
         'info': config_info[0],
         'request': request['config'],
         'project': ProjectInfo.objects.all().values(
-            'project_name').order_by('-create_time')
+            'project_name').order_by('-create_time'),
+        'module' : ModuleInfo.objects.all().values().order_by('-create_time')
     }
     return render_to_response('edit_config.html', manage_info)
 
@@ -770,7 +777,8 @@ def edit_suite(request, id=None):
         'account': account,
         'info': suite_info,
         'project': ProjectInfo.objects.all().values(
-            'project_name').order_by('-create_time')
+            'project_name').order_by('-create_time'),
+        'module' : ModuleInfo.objects.all().values().order_by('-create_time')
     }
     return render_to_response('edit_suite.html', manage_info)
 

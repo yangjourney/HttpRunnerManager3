@@ -34,6 +34,10 @@
                                 <div class="input-group-addon" style="color: #0a628f">模块列表</div>
                                 <select id="belong_module_id" name="module" class="form-control"
                                         onchange="auto_load('#form_message', '/api/add_case/', '#belong_case_id', 'case')">
+                                    <option value="请选择" selected>请选择</option>
+                                    {% for obj in module %}
+                                        <option value="{{ obj.id }}">{{ obj.module_name }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>

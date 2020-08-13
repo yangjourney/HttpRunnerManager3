@@ -455,7 +455,7 @@ def add_test_reports(summaryDict, report_name=None):
     test_reports = {
         'report_name': report_name,
         'status': summaryDict["success"],
-        'successes': summaryDict["success"],
+        'successes': summaryDict["count"]["successes"],
         'testsRun': summaryDict["case_id"],
         'start_at': summaryDict["time"]["start_at_iso_format"],
         'reports': reports

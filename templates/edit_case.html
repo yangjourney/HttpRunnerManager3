@@ -51,8 +51,7 @@
                     <div class="col-sm-8">
                         <select name="project" class="form-control"
                                 onchange="auto_load('#form_message', '/api/edit_case/', '#module', 'module')">
-                            <option value="{{ info.belong_project }}"
-                                    selected>{{ info.belong_project }}</option>
+                            <option value="{{ info.belong_project }}" selected>{{ info.belong_project }}</option>
                             {% for obj in project %}
                                 {% ifnotequal info.belong_project obj.project_name %}
                                     <option value='{{ obj.project_name }}'>{{ obj.project_name }}</option>
@@ -69,7 +68,7 @@
                            style="font-weight: inherit; font-size: small ">选择模块:</label>
                     <div class="col-sm-8">
                         <select class="form-control" id="module" name="module">
-                            <option value="{{ info.belong_module.id }}">{{ info.belong_module.module_name }}</option>
+                            <option value="{{ info.belong_module_id }}">{{ module_name }}</option>
                         </select>
                     </div>
 
@@ -108,8 +107,7 @@
                                     <div class="input-group-addon" style="color: #0a628f">可选项目</div>
                                     <select name="project" class="form-control"
                                             onchange="auto_load('#belong_message', '/api/edit_case/', '#belong_module_id', 'module')">
-                                        <option value="{{ info.belong_project }}"
-                                                selected>{{ info.belong_project }}</option>
+                                        <option value="{{ info.belong_project }}" selected>{{ info.belong_project }}</option>
                                         {% for obj in project %}
                                             {% ifnotequal info.belong_project obj.project_name %}
                                                 <option value='{{ obj.project_name }}'>{{ obj.project_name }}</option>
@@ -126,7 +124,12 @@
                                     <select id="belong_module_id" name="module" class="form-control"
                                             onchange="auto_load('#belong_message', '/api/add_case/', '#belong_case_id', 'case');
                                         auto_load('#belong_message', '/api/edit_case/', '#config', 'config')">
-                                        <option value="{{ info.belong_module_id }}">{{ info.belong_module.module_name }}</option>
+                                        <option value="{{ info.belong_module_id }}" selected>{{ module_name }}</option>
+                                        {% for obj in module %}
+                                            {% ifnotequal module_name obj.module_name %}
+                                                <option value='{{ obj.id }}'>{{ obj.module_name }}</option>
+                                            {% endifnotequal %}
+                                        {% endfor %}
                                         <option value="请选择">请选择</option>
                                     </select>
                                 </div>
@@ -136,9 +139,10 @@
                                 <div class="input-group col-md-10 col-md-offset-1">
                                     <div class="input-group-addon" style="color: #0a628f">可选配置</div>
                                     <select id="config" name="config" class="form-control">
-                                        {% if 'config' in include.0.keys %}
-                                            <option value="{{ include.0.config.0 }}">{{ include.0.config.1 }}</option>
-                                        {% endif %}
+                                        {% for obj in config_info %}
+                                            <option value="{{ obj.id }}">{{ obj.name }}</option>
+                                        {% endfor %}
+                                        <option value="请选择" selected>请选择</option>
                                     </select>
                                 </div>
                             </div>
@@ -147,6 +151,10 @@
                                 <div class="input-group col-md-10 col-md-offset-1">
                                     <div class="input-group-addon" style="color: #0a628f">可选用例</div>
                                     <select id="belong_case_id" name="include" class="form-control">
+                                        {% for obj in all_case %}
+                                            <option value="{{ obj.id }}">{{ obj.name }}</option>
+                                        {% endfor %}
+                                        <option value="请选择" selected>请选择</option>
                                     </select>
                                 </div>
                             </div>

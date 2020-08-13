@@ -86,6 +86,12 @@ class ModuleInfoManager(models.Manager):
             else:
                 return self.get(id=module_name)
 
+    def get_module_by_id(self, index, type=True):
+        if type:
+            return self.filter(id=index).all()
+        else:
+            return self.get(id=index).name
+
 
 
 '''用例信息表操作'''
@@ -134,6 +140,12 @@ class TestCaseInfoManager(models.Manager):
             return self.filter(id=index).all()
         else:
             return self.get(id=index).name
+    def get_case_by_moduleId(self,module_id,type=1,is_all=True):
+        if is_all:
+            return self.filter(belong_module=module_id).filter(type=type).all()
+        else:
+            return self.filter(belong_module=module_id).name
+
 
 
 '''环境变量管理'''
