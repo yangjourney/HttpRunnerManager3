@@ -1,21 +1,19 @@
 # Create your tasks here
 from __future__ import absolute_import, unicode_literals
 
-import datetime
 import os
 import shutil
+import sys
 import time
 
 from celery import shared_task
 from django.core.exceptions import ObjectDoesNotExist
 
 from ApiManager.models import ProjectInfo
-from ApiManager.utils.common import timestamp_to_datetime, getAllYml
 from ApiManager.utils.emails import send_email_reports
 from ApiManager.utils.operation import add_test_reports
 from ApiManager.utils.runner import run_by_project, run_by_module, run_by_suite, main_run_cases
-from ApiManager.utils.testcase import get_time_stamp,dump_yaml_to_dict,fail_request_handle
-from httprunner import HttpRunner
+from ApiManager.utils.testcase import get_time_stamp
 from loguru import logger
 
 
@@ -46,7 +44,7 @@ def project_hrun(name, base_url, project, receiver):
     logger.info("异步运行整个项目")
     id = ProjectInfo.objects.get(project_name=project).id
 
-    testcase_dir_path = os.path.join(os.getcwd(), "suite")
+    testcase_dir_path = os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
 
     run_by_project(id, base_url, testcase_dir_path)
@@ -72,7 +70,7 @@ def module_hrun(name, base_url, module, receiver):
     logger.info("异步运行模块")
     module = list(module)
 
-    testcase_dir_path = os.path.join(os.getcwd(), "suite")
+    testcase_dir_path = os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
 
     try:
@@ -104,7 +102,7 @@ def suite_hrun(name, base_url, suite, receiver):
 
     suite = list(suite)
 
-    testcase_dir_path = os.path.join(os.getcwd(), "suite")
+    testcase_dir_path = os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
 
     try:

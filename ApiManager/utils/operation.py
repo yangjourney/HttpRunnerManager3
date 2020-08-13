@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import sys
 from sys import version_info
 from typing import Iterable
 from jinja2 import Template,escape
@@ -447,7 +448,7 @@ def add_test_reports(summaryDict, report_name=None):
     summaryDict['html_report_name'] = report_name
 
     #report_path = os.path.join(os.getcwd(), "reports{}{}.html".format(separator, str(summaryDict["time"]["start_at_iso_format"])))
-    report_path = make_html_report(summaryDict,html_report_template=os.path.join(os.getcwd(), "templates{}extent_report_template.html".format(separator)))
+    report_path = make_html_report(summaryDict,html_report_template=os.path.join(os.path.dirname(os.path.dirname(os.path.split(os.path.realpath(__file__))[0])), "templates{}extent_report_template.html".format(separator)))
 
     with open(report_path, encoding='utf-8') as stream:
         reports = stream.read()
@@ -484,7 +485,7 @@ def make_html_report(summaryDict, html_report_name = None, html_report_template 
     logger.info("Start to render Html report ...")
     logger.debug("render data: {}".format(summaryDict))
 
-    report_dir_path = os.path.join(os.getcwd(), "reports")
+    report_dir_path = os.path.join(os.path.dirname(os.path.dirname(os.path.split(os.path.realpath(__file__))[0])), "reports")
     start_at_timestamp = int(summaryDict["time"]["start_at"])
     summaryDict["time"]["start_at_iso_format"] = datetime.datetime.fromtimestamp(start_at_timestamp).strftime('%Y-%m-%d %H:%M:%S')
     if html_report_name:

@@ -216,7 +216,7 @@ def run_test(request):
     }
     runner = HttpRunner()
 
-    testcase_dir_path = os.path.join(os.getcwd(), "suite")
+    testcase_dir_path = os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
 
     if request.is_ajax():
@@ -251,7 +251,7 @@ def run_batch_test(request):
     """
 
 
-    testcase_dir_path = os.path.join(os.getcwd(), "suite")
+    testcase_dir_path = os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "suite")
     testcase_dir_path = os.path.join(testcase_dir_path, get_time_stamp())
 
     if request.is_ajax():
@@ -616,7 +616,7 @@ def upload_file(request):
         if project_name == '请选择' or module_name == '请选择':
             return JsonResponse({"status": '项目或模块不能为空'})
 
-        upload_path = sys.path[0] + separator + 'upload' + separator
+        upload_path = os.path.split(os.path.realpath(__file__))[0] + separator + 'upload' + separator
 
         if os.path.exists(upload_path):
             shutil.rmtree(upload_path)
@@ -663,11 +663,11 @@ def download_report(request, id):
         reports = summary.reports
         start_at = summary.start_at
 
-        if os.path.exists(os.path.join(os.getcwd(), "reports")):
-            shutil.rmtree(os.path.join(os.getcwd(), "reports"))
-        os.makedirs(os.path.join(os.getcwd(), "reports"))
+        if os.path.exists(os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "reports")):
+            shutil.rmtree(os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "reports"))
+        os.makedirs(os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "reports"))
 
-        report_path = os.path.join(os.getcwd(), "reports{}{}.html".format(separator, start_at.replace(":", "-")))
+        report_path = os.path.join(os.path.dirname(os.path.split(os.path.realpath(__file__))[0]), "reports{}{}.html".format(separator, start_at.replace(":", "-")))
         with open(report_path, 'w+', encoding='utf-8') as stream:
             stream.write(reports)
 

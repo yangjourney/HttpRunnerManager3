@@ -3818,3 +3818,25 @@ TypeError: eval() arg 1 must be a string, bytes or code object
 2020-08-13 11:37:09,305 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/index/ HTTP/1.1" 200 18315
 2020-08-13 11:47:56,309 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\utils\operation.py changed, reloading.
 2020-08-13 11:47:57,212 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-13 11:48:46,633 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/report_list/1/ HTTP/1.1" 200 35000
+2020-08-13 11:48:53,334 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/17 HTTP/1.1" 301 0
+2020-08-13 11:48:53,352 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/17/ HTTP/1.1" 200 68373
+2020-08-13 11:48:58,446 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/21/ HTTP/1.1" 200 159045
+2020-08-13 11:49:06,338 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/20/ HTTP/1.1" 200 68458
+2020-08-13 11:49:25,006 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/view_report/19/ HTTP/1.1" 200 244533
+2020-08-13 15:50:55,209 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\utils\testcase.py changed, reloading.
+2020-08-13 15:50:56,094 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-13 16:09:46,704 [django.server:154] [basehttp:log_message] [INFO]- "GET /api/report_list/1/ HTTP/1.1" 200 35000
+2020-08-13 16:09:46,731 [django.server:154] [basehttp:log_message] [INFO]- "GET /static/assets/css/common.css HTTP/1.1" 304 0
+2020-08-13 16:09:46,731 [django.server:154] [basehttp:log_message] [INFO]- "GET /static/assets/css/admin.css HTTP/1.1" 304 0
+2020-08-13 16:09:46,732 [django.server:154] [basehttp:log_message] [INFO]- "GET /static/assets/js/app.js HTTP/1.1" 304 0
+2020-08-13 16:09:46,981 [django.server:154] [basehttp:log_message] [INFO]- "GET /favicon.ico HTTP/1.1" 302 0
+2020-08-13 16:09:46,986 [django.server:154] [basehttp:log_message] [INFO]- "GET /static/assets/img/favicon.ico HTTP/1.1" 200 67646
+2020-08-13 17:34:06,430 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\utils\testcase.py changed, reloading.
+2020-08-13 17:34:07,300 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-13 17:51:17,680 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\utils\common.py changed, reloading.
+2020-08-13 17:51:18,813 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-13 17:51:51,650 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\utils\common.py changed, reloading.
+2020-08-13 17:51:52,506 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
+2020-08-13 17:52:13,512 [django.utils.autoreload:217] [autoreload:trigger_reload] [INFO]- D:\Python\auto-project\HttpRunnerManager3\ApiManager\utils\common.py changed, reloading.
+2020-08-13 17:52:14,365 [django.utils.autoreload:597] [autoreload:run_with_reloader] [INFO]- Watching for file changes with StatReloader
